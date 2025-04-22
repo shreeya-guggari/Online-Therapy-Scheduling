@@ -44,10 +44,11 @@ public class SecurityConfig {
                 .requestMatchers("/authenticate", "/register").permitAll()
                 .anyRequest().authenticated()
             )
-            .formLogin((form) -> form
+            .formLogin(form -> form
                 .loginPage("/login")
                 .permitAll()
             )
+            
             .logout((logout) -> logout.permitAll());
         return http.build();
     }

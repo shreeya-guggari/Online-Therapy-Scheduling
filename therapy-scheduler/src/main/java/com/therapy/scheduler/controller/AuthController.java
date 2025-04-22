@@ -1,50 +1,41 @@
 package com.therapy.scheduler.controller;
 
-import com.therapy.scheduler.service.AuthService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.therapy.scheduler.service.AuthService; 
+import com.therapy.scheduler.model.User; 
+import com.therapy.scheduler.model.Role;
+
 
 @Controller
 public class AuthController {
-    @Autowired
-    private AuthService authService;
 
-    @GetMapping("/login")
-    public String loginPage() {
-        return "login";
-    }
+    private final AuthService authService;
 
-    @PostMapping("/authenticate")
-    public String authenticate(@RequestParam String username, @RequestParam String password, Model model) {
-        try {
-            authService.authenticate(username, password);
-            model.addAttribute("message", "Login successful");
-            return "redirect:/";
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            return "login";
-        }
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @GetMapping("/register")
-    public String registerPage() {
-        return "register";
+    public String showRegistrationForm(Model model) {
+        model.addAttribute("user", new User()); // Bind an empty User object to the form
+        return "register"; // Returns register.html
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String username, @RequestParam String password,
-                          @RequestParam String email, @RequestParam String role, Model model) {
+    public String register(@ModelAttribute User user, @RequestParam String role, Model model) {
         try {
-            authService.register(username, password, email, role);
-            model.addAttribute("message", "Registration successful");
-            return "redirect:/login";
+            user.setRole(Role.valueOf(role.toUpperCase())); // Set role from form
+            user.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            authService.register(user.getUsername(), user.getPassword(), user.getEmail(), role);
+            return "redirect:/login"; // Redirect to login after success
         } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            return "register";
+            model.addAttribute("error", "Registration failed: " + e.getMessage());
+            return "register"; // Return to form with error
         }
     }
 }
