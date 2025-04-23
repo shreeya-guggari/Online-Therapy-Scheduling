@@ -1,36 +1,44 @@
 package com.therapy.scheduler.service;
 
-import com.therapy.scheduler.model.Role;
-import com.therapy.scheduler.model.User;
-import com.therapy.scheduler.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.therapy.scheduler.model.User;
+import com.therapy.scheduler.model.Role;
+import com.therapy.scheduler.repository.UserRepository;
+import java.sql.Timestamp;
+import java.util.Collections;
 
 @Service
-public class AuthService {
+public class AuthService implements UserDetailsService {
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User register(String username, String password, String email, String roleStr) {
+    public void register(String username, String password, String email, String role) {
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
-        user.setRole(Role.valueOf(roleStr.toUpperCase()));
-        user.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-        return userRepository.save(user);
+        user.setRole(Role.valueOf(role.toUpperCase()));
+        user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        userRepository.save(user);
     }
 
-    public User authenticate(String username, String password) {
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        if (passwordEncoder.matches(password, user.getPassword())) {
-            return user;
-        }
-        throw new RuntimeException("Invalid credentials");
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                Collections.singletonList(() -> "ROLE_" + user.getRole().name())
+        );
     }
 }

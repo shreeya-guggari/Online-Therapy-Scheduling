@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Therapist Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .home-container { max-width: 800px; margin: auto; padding: 20px; border: 1px solid #ccc; }
+        .welcome { font-size: 24px; margin-bottom: 20px; }
+        .section { margin-bottom: 15px; }
+        .logout { text-align: right; }
+        a { color: #4CAF50; text-decoration: none; margin-right: 10px; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <div class="welcome">Welcome, Therapist</div>
+        <div class="section">
+            <h3>Choose an Option</h3>
+            <p>Select one of the following actions:</p>
+            <a th:href="@{/therapist/appointments}">Schedule Appointments</a>
+            <a th:href="@{/therapist/notes}">Manage Notes and Prescriptions</a>
+            <a th:href="@{/prescriptions/session(sessionId=${sessionId})}">View Session Prescriptions</a>
+        </div>
+        <div class="logout">
+            <form th:action="@{/logout}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

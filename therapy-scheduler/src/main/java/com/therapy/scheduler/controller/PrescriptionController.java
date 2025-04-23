@@ -1,49 +1,50 @@
 package com.therapy.scheduler.controller;
 
-import com.therapy.scheduler.model.Prescription;
-import com.therapy.scheduler.service.PrescriptionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import com.therapy.scheduler.service.PrescriptionService;
 
 @Controller
-@RestController
-@RequestMapping("/api/prescriptions")
 public class PrescriptionController {
-    @Autowired
-    private PrescriptionService prescriptionService;
 
-    @GetMapping
-    public String prescriptionPage(Model model) {
-        return "prescription";
+    private final PrescriptionService prescriptionService;
+
+    public PrescriptionController(PrescriptionService prescriptionService) {
+        this.prescriptionService = prescriptionService;
     }
 
-    @PostMapping
-    public String createPrescription(@RequestParam Long sessionId, @RequestParam String details) {
-        prescriptionService.createPrescription(sessionId, details);
-        return "redirect:/";
-    }
-
-    @PostMapping("/api")
-    public ResponseEntity<Prescription> apiCreatePrescription(@RequestParam Long sessionId, @RequestParam String details, Authentication auth) {
-        if (auth == null || !auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_COUNSELLOR") || a.getAuthority().equals("ROLE_ADMIN"))) {
-            return ResponseEntity.status(403).build();
+    @PostMapping("/prescription/create")
+    public String createPrescription(@RequestParam Long sessionId, @RequestParam String notes, Model model) {
+        try {
+            prescriptionService.createPrescription(sessionId, notes);
+            model.addAttribute("message", "Prescription created successfully.");
+            return "redirect:/therapist/home";
+        } catch (Exception e) {
+            model.addAttribute("error", "Failed to create prescription: " + e.getMessage());
+            return "error";
         }
-        Prescription prescription = prescriptionService.createPrescription(sessionId, details);
-        return ResponseEntity.ok(prescription);
     }
 
-    @GetMapping("/session/{sessionId}")
-    public ResponseEntity<List<Prescription>> getPrescriptionsBySession(@PathVariable Long sessionId, Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(403).build();
+    @PostMapping("/prescription/create-with-file")
+    public String createPrescriptionWithFile(@RequestParam Long sessionId, @RequestParam String notes,
+                                           @RequestParam("prescriptionFile") MultipartFile prescriptionFile, Model model) {
+        try {
+            prescriptionService.createPrescription(sessionId, notes, prescriptionFile);
+            model.addAttribute("message", "Prescription with file created successfully.");
+            return "redirect:/therapist/home";
+        } catch (Exception e) {
+            model.addAttribute("error", "Failed to create prescription: " + e.getMessage());
+            return "error";
         }
-        List<Prescription> prescriptions = prescriptionService.getPrescriptionsBySessionId(sessionId);
-        return ResponseEntity.ok(prescriptions);
+    }
+
+    @GetMapping("/prescriptions/session")
+    public String getPrescriptionsBySessionId(@RequestParam Long sessionId, Model model) {
+        model.addAttribute("prescriptions", prescriptionService.getPrescriptionsBySessionId(sessionId));
+        return "prescription-list";
     }
 }

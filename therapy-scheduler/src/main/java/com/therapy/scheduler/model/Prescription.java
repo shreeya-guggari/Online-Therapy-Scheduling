@@ -1,30 +1,33 @@
 package com.therapy.scheduler.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "prescriptions")
 public class Prescription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "session_id")
-    private Long sessionId;
-
-    private String details;
-
-    @Column(name = "created_at")
-    private Timestamp createdAt;
+    private String patientUsername;
+    private String notes;
+    private String filePath; // Store file path or binary data
+    private Timestamp uploadDate;
+    private Long sessionId; // New field to link to a session/appointment
 
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+    public String getPatientUsername() { return patientUsername; }
+    public void setPatientUsername(String patientUsername) { this.patientUsername = patientUsername; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+    public Timestamp getUploadDate() { return uploadDate; }
+    public void setUploadDate(Timestamp uploadDate) { this.uploadDate = uploadDate; }
     public Long getSessionId() { return sessionId; }
     public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
-    public String getDetails() { return details; }
-    public void setDetails(String details) { this.details = details; }
-    public Timestamp getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }
