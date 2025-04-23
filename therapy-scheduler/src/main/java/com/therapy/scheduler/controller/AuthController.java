@@ -11,6 +11,9 @@ import com.therapy.scheduler.service.AuthService;
 import com.therapy.scheduler.model.User;
 import com.therapy.scheduler.model.Role;
 import com.therapy.scheduler.service.PrescriptionService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Controller
 public class AuthController {
@@ -30,16 +33,29 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@ModelAttribute User user, @RequestParam String role, Model model) {
+    public String register(@ModelAttribute User user, @RequestParam String role, Model model, HttpServletRequest request) {
+        System.out.println("Starting registration for user: " + user.getUsername() + ", role: " + role);
         try {
             user.setRole(Role.valueOf(role.toUpperCase()));
+            System.out.println("Role set to: " + user.getRole());
             user.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
+            System.out.println("CreatedAt set to: " + user.getCreatedAt());
             authService.register(user.getUsername(), user.getPassword(), user.getEmail(), role);
+            System.out.println("User registered successfully, redirecting to /login");
+            request.getSession().invalidate();
             return "redirect:/login";
         } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Registration failed: " + e.getMessage());
             model.addAttribute("error", "Registration failed: " + e.getMessage());
             return "register";
         }
+    }
+
+    @GetMapping("/login")
+    public String showLoginForm() {
+        System.out.println("Handling GET request for /login");
+        return "login";
     }
 
     @GetMapping("/therapist/home")
@@ -71,7 +87,8 @@ public class AuthController {
 
     @GetMapping("/patient/prescriptions")
     public String viewPrescriptions(Model model) {
-        String currentUsername = "currentUser"; // Replace with actual logged-in user logic (e.g., from SecurityContext)
+        // Get the current logged-in user's username
+        String currentUsername = getCurrentUsername();
         model.addAttribute("prescriptions", prescriptionService.getPrescriptionsForUser(currentUsername));
         return "patient-prescriptions";
     }
@@ -86,7 +103,8 @@ public class AuthController {
                                               @RequestParam String dateTime,
                                               @RequestParam int duration, Model model) {
         try {
-            // Add appointment scheduling logic
+            // Stub: Add appointment scheduling logic (e.g., save to database)
+            System.out.println("Scheduling appointment for patient: " + patientUsername + ", at: " + dateTime + ", duration: " + duration);
             return "redirect:/therapist/home";
         } catch (Exception e) {
             model.addAttribute("error", "Scheduling failed: " + e.getMessage());
@@ -103,12 +121,22 @@ public class AuthController {
     public String schedulePatientAppointment(@RequestParam String therapistUsername,
                                             @RequestParam String dateTime, Model model) {
         try {
-            // Add appointment scheduling logic
+            // Stub: Add appointment scheduling logic (e.g., save to database)
+            System.out.println("Scheduling appointment with therapist: " + therapistUsername + ", at: " + dateTime);
             return "redirect:/patient/home";
         } catch (Exception e) {
             model.addAttribute("error", "Scheduling failed: " + e.getMessage());
             return "patient-appointments";
         }
     }
-    
+
+    // Helper method to get the current logged-in user's username
+    private String getCurrentUsername() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            return ((UserDetails) principal).getUsername();
+        } else {
+            return principal.toString();
+        }
+    }
 }

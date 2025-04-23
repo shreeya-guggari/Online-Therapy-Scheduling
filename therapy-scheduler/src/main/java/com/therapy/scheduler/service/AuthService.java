@@ -28,7 +28,9 @@ public class AuthService implements UserDetailsService {
         user.setEmail(email);
         user.setRole(Role.valueOf(role.toUpperCase()));
         user.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+        System.out.println("Registering user: " + user.getUsername() + ", role: " + user.getRole());
         userRepository.save(user);
+        System.out.println("User saved successfully: " + user.getUsername());
     }
 
     @Override
