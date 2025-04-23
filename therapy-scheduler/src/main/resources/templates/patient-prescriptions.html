@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Patient Prescriptions</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .prescription-list { max-width: 600px; margin: auto; }
+        .prescription { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="prescription-list">
+        <h2>My Prescriptions</h2>
+        <div th:if="${prescriptions.isEmpty()}">
+            <p>No prescriptions found.</p>
+        </div>
+        <div th:each="prescription : ${prescriptions}" class="prescription">
+            <p><strong>Patient:</strong> <span th:text="${prescription.patientUsername}"></span></p>
+            <p><strong>Notes:</strong> <span th:text="${prescription.notes}"></span></p>
+            <p><strong>Prescription File:</strong> <span th:text="${prescription.prescriptionFileName}"></span></p>
+        </div>
+        <a href="/patient/home">Back to Home</a>
+    </div>
+</body>
+</html>

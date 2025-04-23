@@ -4,6 +4,7 @@ import com.therapy.scheduler.model.Appointment;
 import com.therapy.scheduler.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional; // Added
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ public class TextAppointmentService {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
+    @Transactional
     public Appointment createAppointment(Long patientId, Long counsellorId, LocalDateTime startTime, LocalDateTime endTime) {
         Appointment appointment = new Appointment();
         appointment.setPatientId(patientId);
@@ -22,6 +24,7 @@ public class TextAppointmentService {
         return appointmentRepository.save(appointment);
     }
 
+    @Transactional
     public Appointment bookAppointment(Appointment appointment) {
         boolean isAvailable = appointmentRepository
                 .findByCounsellorIdAndStartTimeBetween(

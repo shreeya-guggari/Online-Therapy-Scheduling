@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Prescription</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .appointment-list { max-width: 600px; margin: auto; }
+        .appointment { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Create Prescription</h2>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+
+    <!-- Display Related Appointments -->
+    <h3>Related Appointments (Session ID: <span th:text="${sessionId}"></span>)</h3>
+    <div class="appointment-list">
+        <div th:if="${appointments == null or appointments.isEmpty()}">
+            <p>No appointments found for this session.</p>
+        </div>
+        <div th:each="appointment : ${appointments}" class="appointment">
+            <p><strong>Patient:</strong> <span th:text="${appointment.patientUsername != null} ? ${appointment.patientUsername} : 'N/A'"></span></p>
+            <p><strong>Date and Time:</strong> <span th:text="${appointment.dateTime != null} ? ${appointment.dateTime} : 'N/A'"></span></p>
+            <p><strong>Duration:</strong> <span th:text="${appointment.duration} + ' minutes'"></span></p>
+        </div>
+    </div>
+
+    <!-- Form without file upload -->
+    <h3>Create Prescription (No File)</h3>
+    <form th:action="@{/prescription/create}" method="post">
+        <div class="form-group">
+            <label for="patientUsername">Patient Username:</label>
+            <input type="text" id="patientUsername" name="patientUsername" required>
+        </div>
+        <div class="form-group">
+            <label for="sessionId">Session ID (Optional):</label>
+            <input type="number" id="sessionId" name="sessionId" th:value="${sessionId}">
+        </div>
+        <button type="submit">Create Prescription</button>
+    </form>
+
+    <!-- Form with file upload -->
+    <h3>Create Prescription (With File)</h3>
+    <form th:action="@{/prescription/createWithFile}" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="patientUsername">Patient Username:</label>
+            <input type="text" id="patientUsername" name="patientUsername" required>
+        </div>
+        <div class="form-group">
+            <label for="prescription">Prescription File:</label>
+            <input type="file" id="prescription" name="prescription">
+        </div>
+        <div class="form-group">
+            <label for="sessionId">Session ID (Optional):</label>
+            <input type="number" id="sessionId" name="sessionId" th:value="${sessionId}">
+        </div>
+        <button type="submit">Create Prescription with File</button>
+    </form>
+
+    <a href="/therapist/home">Back to Home</a>
+</body>
+</html>

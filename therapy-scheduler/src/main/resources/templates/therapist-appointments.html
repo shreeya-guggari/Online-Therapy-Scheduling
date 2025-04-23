@@ -6,45 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        .form-container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ccc; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 8px; box-sizing: border-box; }
-        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        .logout, .next { text-align: right; margin-top: 20px; }
-        a { color: #4CAF50; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        .appointment-list { max-width: 600px; margin: auto; }
+        .appointment { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+        .error { color: red; }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h2>Schedule Appointment</h2>
-        <form th:action="@{/therapist/appointments}" method="post">
-            <div class="form-group">
-                <label for="patientUsername">Patient Username:</label>
-                <input type="text" id="patientUsername" name="patientUsername" required>
-            </div>
-            <div class="form-group">
-                <label for="dateTime">Date and Time:</label>
-                <input type="datetime-local" id="dateTime" name="dateTime" required>
-            </div>
-            <div class="form-group">
-                <label for="duration">Duration (minutes):</label>
-                <input type="number" id="duration" name="duration" min="15" max="120" required>
-            </div>
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit">Schedule</button>
-        </form>
-        <div class="next">
-            <a th:href="@{/therapist/notes}">Proceed to Notes and Prescriptions</a>
+    <h2>Schedule Appointment</h2>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <form th:action="@{/therapist/appointments}" method="post">
+        <div class="form-group">
+            <label for="patientUsername">Patient Username:</label>
+            <input type="text" id="patientUsername" name="patientUsername" required>
         </div>
-        <div class="logout">
-            <form th:action="@{/logout}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit">Logout</button>
-            </form>
+        <div class="form-group">
+            <label for="dateTime">Date and Time:</label>
+            <input type="datetime-local" id="dateTime" name="dateTime" required>
+        </div>
+        <div class="form-group">
+            <label for="duration">Duration (minutes):</label>
+            <input type="number" id="duration" name="duration" required>
+        </div>
+        <div class="form-group">
+            <label for="sessionId">Session ID (Optional):</label>
+            <input type="number" id="sessionId" name="sessionId" th:value="${sessionId}">
+        </div>
+        <button type="submit">Schedule Appointment</button>
+    </form>
+
+    <h2>My Appointments</h2>
+    <div class="appointment-list">
+        <div th:if="${appointments == null or appointments.isEmpty()}">
+            <p>No appointments scheduled.</p>
+        </div>
+        <div th:each="appointment : ${appointments}" class="appointment">
+            <p><strong>Patient:</strong> <span th:text="${appointment.patientUsername != null} ? ${appointment.patientUsername} : 'N/A'"></span></p>
+            <p><strong>Start Time:</strong> <span th:text="${appointment.startTime != null} ? ${appointment.startTime} : (${appointment.dateTime != null} ? ${appointment.dateTime} : 'N/A')"></span></p>
+            <p><strong>End Time:</strong> <span th:text="${appointment.endTime != null} ? ${appointment.endTime} : (${appointment.dateTime != null and appointment.duration != null} ? ${appointment.dateTime.plusMinutes(appointment.duration)} : 'N/A')"></span></p>
+            <p><strong>Status:</strong> <span th:text="${appointment.status != null} ? ${appointment.status} : 'N/A'"></span></p>
+            <p><strong>Session ID:</strong> <span th:text="${appointment.sessionId != null} ? ${appointment.sessionId} : 'N/A'"></span></p>
         </div>
     </div>
+
+    <a href="/therapist/home">Back to Home</a>
 </body>
 </html>
